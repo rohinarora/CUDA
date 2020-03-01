@@ -53,7 +53,6 @@
   * save exec.bash present in cluster **todo**
   * see Programming_Model_Execution_Model2 again. **todo**
   * take other source files Nico has **todo**
-
 * Questions
 * Slide 9. What do you mean by async call?
 * Slide 19. What do you mean by "It has asynchronous behavior"?

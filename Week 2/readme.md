@@ -1,4 +1,5 @@
 * **Hardware and software abstractions**
+* CUDA uses Single Instruction Multiple Thread (SIMT) model
 * slide 6
   * CUDA Driver API. Low level, more control
   * CUDA Runtime API. Higher level; implemented on top of the driver API. This repo uses CUDA runtime.
@@ -58,14 +59,13 @@ blockID.z*blockDim.z+threadIDz
   * \_\_device__ -> call kernel code from within a kernel code
 * Slide 20. Matrix multiplication in C.
 * Slide 23. Can also compile C files with clang, cuda files with nvcc, and link everything later with clang
-* Each SMx has 192 cuda cores. With 15 SMx we get access to 15*192 cuda cores
-* SMx= Streaming Multiprocessors
-* "Wrap" is a hardware concept. Not available to programmer. Managed by hardware.
-  * Scheduler chunks the blocks into wraps- groups of 32 threads. These wraps are executed in the same SMx
-* Block is a hardware and software concept.
-  * Blocks are executed on same SMx (share L1 cache)
+* Slide 27.
+  * Each SMx has 192 cuda cores. With 15 SMx we get access to 15*192 (2880) cuda cores
+  * SMx= Streaming Multiprocessors
+  * "Wrap" is a hardware concept. Not available to programmer. Managed by hardware.
+  * Scheduler chunks the block into wraps- groups of 32 threads. These wraps are executed in the same SMx. Shared L1
 * Slide 28. Good
-* Slide 29. Excellent
+* Slide 29. Good
 * Slide 30. 4 blocks. these 4 blocks can be scheduled on any SMx.
   * 256 threads within the block must run on same SMx. A SMx has 192 cuda cores. Hence some threads will be waiting while first 192 complete (scheduled in chunks of 32 threads, aka wraps)
 * Minimum blocks i must have to have all the SMx running?
@@ -73,23 +73,59 @@ blockID.z*blockDim.z+threadIDz
 * Slide 28/29. Wrap on same SMx. Block on same SMx. Wrap is just a way to schedule block on to a SMx.
 * Slide 30
   * Will occupy just 4/15 SMx at best at one time
-* Slide 33. Wraps are 1D. Hardware concept
+* Slide 31
+  * **Each SM will partition the blocks into warps and then schedule them for
+execution depending on available hardware resources.** Multiple blocks could be assigned to the same SM (but that
+doesn't mean they will be executed simultaneously. Depends on resources)
+* Slide 32.
+  * Each thread in a warp must executed the same instruction.
+* Slide 33.
+  * Blocks can be 3D. But Wraps are 1D. Hardware concept
+  * Threads are grouped into warps based on the built-in variable
 * Slide 34
   * If block size=33, 2 wraps. Both wraps on same SMx. 2nd wrap underutilized (1/32 cores being used in 2nd wrap)
-* Slide 36. But SM has 192 cores. So 6 wraps at a time. The rest 58 wrap are in pending. 64 wraps are max in a SM.  This is running + pending + idle
+* Slide 36. SM has 192 cores. So 6 wraps at a time. The rest 58 wrap are in pending. 64 wraps are max in a SM.  This is running + pending + idle
+* Slide 39.
+  * All threads on a warp MUST execute the same instruction.
 * Slide 42. Good
-* cudaMalloc has pointer to pointer as input argument. Not sure why
-* compile VectorAddsolution.cu
-  * run ./add 10000 2048
-    * runs but doesn't give error !. only gives testing error.  _add some explanation here_ use wrapper_gpu_error. **todo**
-  * profiling. **todo**
-  * see lab once again incase you missed anything. **todo**
-  * save exec.bash present in cluster **todo**
-  * see Programming_Model_Execution_Model2 again. **todo**
-  * take other source files Nico has **todo**
+* Slide 43
+  * Kepler architecture information
+  * Multiprocessor here means an SM
+  * Max Threads / Block -> 1024
+  * Max Warps / SM -> 64
+  * Threads / Warp -> 32
+  * Max Threads / SM -> 2048 (32*64)(can have more than 1 block on a SM)
+  * Max Registers / Thread -> 255
+  * Registers / SM -> 64k
+  * Max Blocks / SM -> 16
+* Slide 46,47
+  * Timing/Profiling code
+* Slide 49-51
+  * Using NVPROF
+* Slide 54
+  * **Use memories efficiently**
+  * Avoid control flow divergence (slide 40)
+  * Avoid unnecessary data transfers
+  * Keep data being accessed often close to the processing elements
+  * Use registers and shared memory
+* Slide 55
+  * Profiling is key to performance
+  * Fitting your application to the GPU memory hierarchy is critical for performance
 * Questions
-* Slide 9. What do you mean by async call?
-* Slide 11. Why void** in cudaMalloc
-* Slide 13. What ifs. Answer to 4 questions
-* Slide 14. Pic not fully clear
-* Slide 19. What do you mean by "It has asynchronous behavior"?
+  * Slide 9. What do you mean by async call?
+  * Slide 11. Why void** in cudaMalloc
+  * Slide 13. What ifs. Answer to 4 questions
+  * Slide 14. Pic not fully clear
+  * Slide 19. What do you mean by "It has asynchronous behavior"?
+  * Slide 46. Why is cudaEventSynchronize needed?
+* ToDo
+  * Vector addition C and Cuda
+  * MatMul C and Cuda (Slide 20)
+  * compile VectorAddsolution.cu
+    * run ./add 10000 2048
+      * runs but doesn't give error !. only gives testing error.  _add some explanation here_ use wrapper_gpu_error. **todo**
+    * profiling. **todo**
+    * see lab once again incase you missed anything. **todo**
+    * save exec.bash present in cluster **todo**
+    * see Programming_Model_Execution_Model2 again. **todo**
+    * take other source files Nico has **todo**

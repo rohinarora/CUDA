@@ -1,17 +1,19 @@
 * **Hardware and software abstractions**
 * slide 6
-* grids, blocks, kernels
-* kernel is the operation that is actual code inside the nested loops
+  * CUDA Driver API. Low level, more control
+  * CUDA Runtime API. Higher level; implemented on top of the driver API. This repo uses CUDA runtime.
 * slide 8- about cuda kernel
+  * kernel is the operation that is actual code inside the nested loops
+* Slide 10. Flow of a CUDA program
 * slide 11- first use cudaMalloc. Allocate memory on GPU
-* note- cudaMemcpy has *const* void* src pointer. dont want to modify src data
+  * cudaMemcpy has **const** void* src pointer. don't want to modify src data
 * slide 13.
-  * kernel is executed by the threads that reside inside a block that is part of a grid
-  * Grid has blocks. Blocks can be 1D, 2D or 3D. Blocks have threads. These threads run the kernel
+  * Grid has blocks. Blocks have threads. Threads run the kernel code
+  * Blocks can be 1D, 2D or 3D.
   * Slide 13 shows 2D blocks
-  * We see here 6 blocks each with 15 threads
-* CUDA core is much simpler than a CPU core.
-* Thread is a software abstraction for CUDA core. Threads "map" on to CUDA core. But can have more threads than CUDA cores for a SM, with extra threads in waiting state (i think)(slide 36)
+  * We see here 6 blocks each with 15 threads. Total 90 threads
+* CUDA core is much simpler than a CPU core. Hence can have thousands of CUDA cores on a GPU chip
+* Thread is a software abstraction for CUDA core. Threads "map" on to CUDA core. But can have more threads than CUDA cores for a SM, with extra threads in waiting state
 * Slide 14. Important
   * A Kernel call creates a Grid.
   * All the blocks in the same grid contain the same number of threads.
@@ -55,4 +57,6 @@
   * take other source files Nico has **todo**
 * Questions
 * Slide 9. What do you mean by async call?
+* Slide 11. Why void** in cudaMalloc
+* Slide 13. What ifs. Answer to 4 questions
 * Slide 19. What do you mean by "It has asynchronous behavior"?

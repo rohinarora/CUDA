@@ -9,21 +9,53 @@
   * cudaMemcpy has **const** void* src pointer. don't want to modify src data
 * slide 13.
   * Grid has blocks. Blocks have threads. Threads run the kernel code
-  * Blocks can be 1D, 2D or 3D.
   * Slide 13 shows 2D blocks
   * We see here 6 blocks each with 15 threads. Total 90 threads
-* CUDA core is much simpler than a CPU core. Hence can have thousands of CUDA cores on a GPU chip
-* Thread is a software abstraction for CUDA core. Threads "map" on to CUDA core. But can have more threads than CUDA cores for a SM, with extra threads in waiting state
-* Slide 14. Important
+  * Slide 13. GridDim.X=3, GridDim.Y=2. blockDim.x=5, blockDim.y=3. If blockDim.z not defined, but its implicitly assigned as 1. 15 threads in the block. In general, number of threads in a block= (blockDim.x)\*(blockDim.y)\*(blockDim.z).
+  * CUDA core is much simpler than a CPU core. Hence can have thousands of CUDA cores on a GPU chip
+  * Thread is a software abstraction for CUDA core. Threads "map" on to CUDA core. But can have more threads than CUDA cores for a SM, with extra threads in waiting state
+* Slide 14.
   * A Kernel call creates a Grid.
+    * There is only 1 grid present
   * All the blocks in the same grid contain the same number of threads.
-  * The threads of a block can be indexed using 1 Dimension (x), 2 Dimensions (x,y) or 3 Dimensions indexes (x,y,z)
-* ![](images/1.png)
-* Slide 13. GridDim.X=3, GridDim.Y=2 blockDim.y=3. blockDim.x=5. If blockDim.z not defined, but its implicitly assigned as 1. 15 threads in the block. In general, number of threads in a block= (blockDim.x)\*(blockDim.y)\*(blockDim.z).
-* Grid can be 3D. 3rd dimension has some small limit.
-* Slide 15. In the end want to define block and grids so as to optimally utilize the GPU hardware at hand
+  * Blocks Dim can be 1D, 2D or 3D.
+  * Thread "ID" can be 1D, 2D or 3D
+  * BlockDim is a global number. Constant for the kernel. Thread "ID" is indexing the thread inside that BlockDim
+  * Similarly->
+  * Grid Dim can be 1D, 2D or 3D
+  * Block "ID" can be 1D, 2D or 3D
+  * GridDim is a global number. Constant for the kernel. Block "ID" is indexing the block inside that GridDim
+    * 3rd dimension of Grid has some small limit
+  * ![](images/1.png)
+* Slide 15.
+  * How do we define the number of blocks per grid, and threads per block?
+    * Consider the nature of the problem
+    * Consider the nature of the GPU
+architecture
+  * In the end want to define block and grids so as to optimally utilize the GPU hardware at hand
   * dim3 is a struct in C that has x,y,z
+  * dim3 block(32) -> means block has 32 threads. This block runs on 1 SM. Can give max 2048 as a number
+  * dim3 grid(((nElem-1)/block.x)+1)
+    * number of blocks in a grid. same as number of SM's selected.
+    * see slide for math
+  * There is only 1 grid
 * Slide 16
+  * grid*block is the total number of threads launched for the kernel.
+* Slide 17.
+  * Dim x and y are implicit here for grid and block
+  * Grid- 4096,1,1
+  * Block- 256,1,1
+  * index=
+```
+blockID.x*blockDim.x+threadIDx+\
+blockID.y*blockDim.y+threadIDy+\
+blockID.z*blockDim.z+threadIDz
+```
+  * Since zero indexing, y and z values are 0 above for the slide
+* Slide 19. \_\_global__ and \_\_device__ qualifiers
+  * It has asynchronous behavior. Means main code keeps running parallely to kernel code
+  * \_\_global__ -> call kernel code from CPU
+  * \_\_device__ -> call kernel code from within a kernel code
 * Slide 20. Matrix multiplication in C.
 * Slide 23. Can also compile C files with clang, cuda files with nvcc, and link everything later with clang
 * Each SMx has 192 cuda cores. With 15 SMx we get access to 15*192 cuda cores
@@ -59,4 +91,5 @@
 * Slide 9. What do you mean by async call?
 * Slide 11. Why void** in cudaMalloc
 * Slide 13. What ifs. Answer to 4 questions
+* Slide 14. Pic not fully clear
 * Slide 19. What do you mean by "It has asynchronous behavior"?

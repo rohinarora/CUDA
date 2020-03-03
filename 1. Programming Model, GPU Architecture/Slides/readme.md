@@ -1,12 +1,14 @@
+#### sess03.pdf
 * **Hardware and software abstractions**
 * CUDA uses Single Instruction Multiple Thread (SIMT) model
-* slide 6
+* slide 6. CUDA Driver API, CUDA Runtime API
   * CUDA Driver API. Low level, more control
   * CUDA Runtime API. Higher level; implemented on top of the driver API. This repo uses CUDA runtime.
 * slide 8- about cuda kernel
   * kernel is the operation that is actual code inside the nested loops
-* Slide 10. Flow of a CUDA program
-* slide 11- first use cudaMalloc. Allocate memory on GPU
+* Slide 9. Flow of a CUDA program
+  * asynchronous call. Cuda calls from host device are asynchronous. Host code keeps running parallely to Cuda code
+* slide 11
   * cudaMemcpy has **const** void* src pointer. don't want to modify src data
 * slide 13.
   * Grid has blocks. Blocks have threads. Threads run the kernel code
@@ -35,9 +37,11 @@
 architecture
   * In the end want to define block and grids so as to optimally utilize the GPU hardware at hand
   * dim3 is a struct in C that has x,y,z
-  * dim3 block(32) -> means block has 32 threads. This block runs on 1 SM. Can give max 2048 as a number
+  * dim3 block(32) -> means block has 32 threads. This block runs on 1 SM.
+    * All threads in a block run on same SM
+    * Can have max 2048 threads on 1 SM in Kepler. Hence can give max 2048 as a number here
   * dim3 grid(((nElem-1)/block.x)+1)
-    * number of blocks in a grid. same as number of SM's selected.
+    * number of blocks in a grid
     * see slide for math
   * There is only 1 grid
 * Slide 16
@@ -46,13 +50,6 @@ architecture
   * Dim x and y are implicit here for grid and block
   * Grid- 4096,1,1
   * Block- 256,1,1
-  * index=
-```
-blockID.x*blockDim.x+threadIDx+\
-blockID.y*blockDim.y+threadIDy+\
-blockID.z*blockDim.z+threadIDz
-```
-  * Since zero indexing, y and z values are 0 above for the slide
 * Slide 19. \_\_global__ and \_\_device__ qualifiers
   * It has asynchronous behavior. Means main code keeps running parallely to kernel code
   * \_\_global__ -> call kernel code from CPU
@@ -112,11 +109,7 @@ doesn't mean they will be executed simultaneously. Depends on resources)
   * Profiling is key to performance
   * Fitting your application to the GPU memory hierarchy is critical for performance
 * Questions
-  * Slide 9. What do you mean by async call?
   * Slide 11. Why void** in cudaMalloc
-  * Slide 13. What ifs. Answer to 4 questions
-  * Slide 14. Pic not fully clear
-  * Slide 19. What do you mean by "It has asynchronous behavior"?
   * Slide 46. Why is cudaEventSynchronize needed?
 * ToDo
   * Vector addition C and Cuda

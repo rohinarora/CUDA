@@ -1,8 +1,9 @@
-* grid and block size. what them to be fully
-* global memory coalescing. exploit spatial locality.
-* constant memory. all threads reading same memory
-* texture memory. Z shape. exploit spatial locality.
-* shared memory banking. 32 banks each of 4 bytes.
+* Make sure you have correct grid and block size. What to fully use the GPU hardware
+* If you have less blocks and more SM's, hardware won't be fully utilized (1 block will run on 1 SM completely. It won't split across SMs). Want blocks to be >= SMs (generally)
+* Global memory coalescing. Exploit spatial locality.
+* Constant memory. All threads reading same memory
+* Texture memory. Z shape/transform. Exploit spatial locality. Not sure how Nvidia does it
+* Shared memory banking. 32 banks each of 4 bytes.
   * data shared among different threads
   * different threads accessing different data across banks. one go. same cycle.
   * many threads accessing same data-> broadcast

@@ -1,0 +1,10 @@
+/var/spool/slurm/d/job10272506/slurm_script: line 12: cd: /scratch/arora.roh/GPUClassS19/HOL3/: No such file or directory
++ cuda-memcheck ./vadd_coalesced 1000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 1.54 ms
+Running parallel job.
+	Parallel Job Time: 3.09 ms
+Correct result. No errors were found.
+========= CUDA-MEMCHECK
+========= ERROR SUMMARY: 0 errors

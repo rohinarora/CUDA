@@ -1,0 +1,25 @@
+/var/spool/slurm/d/job10272566/slurm_script: line 12: cd: /scratch/arora.roh/GPUClassS19/HOL3/: No such file or directory
++ nvprof --metrics gld_requested_throughput,gst_requested_throughput,gst_throughput,gld_throughput,gld_efficiency,gst_efficiency,stall_memory_dependency,gld_transactions_per_request,gst_transactions_per_request ./vadd_coalesced 100000000
+==33808== NVPROF is profiling process 33808, command: ./vadd_coalesced 100000000
+==33808== Some kernel(s) will be replayed on device 0 in order to collect all events/metrics.
+==33808== Profiling application: ./vadd_coalesced 100000000
+==33808== Profiling result:
+==33808== Metric result:
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Tesla K20m (0)"
+    Kernel: add(Data, int)
+          1                  gld_requested_throughput          Requested Global Load Throughput  93.460GB/s  93.460GB/s  93.460GB/s
+          1                  gst_requested_throughput         Requested Global Store Throughput  46.730GB/s  46.730GB/s  46.730GB/s
+          1                            gst_throughput                   Global Store Throughput  46.730GB/s  46.730GB/s  46.730GB/s
+          1                            gld_throughput                    Global Load Throughput  93.460GB/s  93.460GB/s  93.460GB/s
+          1                            gld_efficiency             Global Memory Load Efficiency     100.00%     100.00%     100.00%
+          1                            gst_efficiency            Global Memory Store Efficiency     100.00%     100.00%     100.00%
+          1                   stall_memory_dependency        Issue Stall Reasons (Data Request)      63.48%      63.48%      63.48%
+          1              gld_transactions_per_request      Global Load Transactions Per Request    2.000000    2.000000    2.000000
+          1              gst_transactions_per_request     Global Store Transactions Per Request    2.000000    2.000000    2.000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 203.41 ms
+Running parallel job.
+	Parallel Job Time: 1277.75 ms
+Correct result. No errors were found.

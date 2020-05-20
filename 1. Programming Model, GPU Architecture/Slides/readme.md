@@ -10,9 +10,10 @@
   * asynchronous call. Cuda calls from host device are asynchronous. Host code keeps running parallely to Cuda code
 * slide 11
   * cudaMemcpy has **const** void* src pointer. don't want to modify src data
+  * note **void**** devPtr. Very good - https://stackoverflow.com/questions/12936986/why-does-cudamalloc-use-pointer-to-pointer , https://stackoverflow.com/questions/7989039/use-of-cudamalloc-why-the-double-pointer
 * slide 13.
   * Grid has blocks. Blocks have threads. Threads run the kernel code
-  * Slide 13 shows 2D blocks
+  * Slide 13 shows 2D blocks and 2D grid
   * We see here 6 blocks each with 15 threads. Total 90 threads
   * Slide 13. GridDim.X=3, GridDim.Y=2. blockDim.x=5, blockDim.y=3. If blockDim.z not defined, but its implicitly assigned as 1. 15 threads in the block. In general, number of threads in a block= (blockDim.x)\*(blockDim.y)\*(blockDim.z).
   * CUDA core is much simpler than a CPU core. Hence can have thousands of CUDA cores on a GPU chip
@@ -21,19 +22,16 @@
   * A Kernel call creates a Grid.
     * There is only 1 grid present
   * All the blocks in a grid contain the same number of threads.
-  * Blocks Dim can be 1D, 2D or 3D.
-  * Thread "ID" can be 1D, 2D or 3D
-  * BlockDim is a global number. Constant for the kernel. Thread "ID" is indexing the thread inside that BlockDim
-  * Similarly->
-  * Grid Dim can be 1D, 2D or 3D
-  * Block "ID" can be 1D, 2D or 3D
+  * "Blocks Dim" can be 1D, 2D or 3D. "Thread ID" can be 1D, 2D or 3D
+  * BlockDim is a global number. Constant for the kernel. Thread ID is indexing the thread inside that BlockDim
+  * *Similarly->*
+  * Grid Dim can be 1D, 2D or 3D. "Block ID" can be 1D, 2D or 3D
   * GridDim is a global number. Constant for the kernel. Block "ID" is indexing the block inside that GridDim
     * 3rd dimension of Grid has some small limit
 * Slide 15.
   * How do we define the number of blocks per grid, and threads per block?
     * Consider the nature of the problem
-    * Consider the nature of the GPU
-architecture
+    * Consider the nature of the GPU architecture
   * In the end want to define block and grids so as to optimally utilize the GPU hardware at hand
   * dim3 is a struct in C that has x,y,z
   * dim3 block(32) -> means block has 32 threads. This block runs on 1 SM.
@@ -108,7 +106,6 @@ doesn't mean they will be executed simultaneously. Depends on resources)
   * Profiling is key to performance
   * Fitting your application to the GPU memory hierarchy is critical for performance
 * Questions
-  * Slide 11. Why void** in cudaMalloc
   * What is the purpose of "set -o xtrace" in 1st line of code?
 
 #### Programming_Model_Execution_Model2.pdf

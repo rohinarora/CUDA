@@ -12,4 +12,5 @@
 cd /scratch/`whoami`/GPUClassS19/HOL2/
 
 set -o xtrace
+cuda-memcheck ./vAdd 1000000 2048
 cuda-memcheck ./vAdd 1000000 256

@@ -13,12 +13,10 @@
 * Slide 18. Local memory
 * Slide 19-31 Shared memory
   * Shared memory is much much faster than local memory. Local memory shown here is physically outside SM
-  * Shared memory and L1 cache are both physically local to SM. Both at same hierarchy. (slide 22)
+  * Shared memory and L1 cache are both physically local to SM. Both at same hierarchy. (slide 22). Shared memory is seen by programmer. L1 is not. L1 is only managed by the hardware
   * Shared memory is local to a SM. Hence threads in a block can access the same shared memory space. Threads in a block will stay in a SM
   * Need to synchronize shared memory access, and must be taken care by programmer. This memory is being accessed by all the threads in a block
   * \__syncthreads() slows the execution a bit, as some wraps will be waiting for others to complete (to achieve sync)
-* Slide 22. Shared memory vs L1 cache.
-  * Shared memory is seen by programmer. L1 is not. L1 is only managed by the hardware
 * Slide 23. Using shared memory in program.
 * Slide 25-31. broadcast/collision etc
 * Slide 32, 33. Cache
@@ -39,6 +37,6 @@
   * atomic arithmetic/bitwise operations
 * Slide 50-53
   * Granularities of synchronization and ways to deal with them
-  
-#### Questions
+
+##### Questions
   * Slide 12. Math not clear

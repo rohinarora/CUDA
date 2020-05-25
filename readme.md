@@ -1,2 +1,1 @@
-* GPGPU programming with CUDA
-* Memory Coalescing
+#### GPGPU programming with CUDA

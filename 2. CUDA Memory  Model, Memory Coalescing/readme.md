@@ -1,2 +1,0 @@
-* Slides
-* Memory Coalescing with

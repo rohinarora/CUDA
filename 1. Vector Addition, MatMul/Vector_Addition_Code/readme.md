@@ -1,13 +1,45 @@
-#### sess04L.pdf
-* vector addition
-* ./vAdd 10000000 2048
-  * gives wrong answer.
-  * 2048 thread size not allowed. result is garbage
-    * use "cudaChecks/wrapper_gpu_error" in code. will catch error early
-    * Another way-> cuda-memcheck ./vAdd 1000000 2048. Catches the error
-* When you do "nvprof ./vAdd 100000000 512"
-  * majority time spent in CUDA memcpy DtoH and CUDA memcpy HtoD.
-  * this is small kernel. vector addition is a toy problem. kernel time is way less than data transfer time. still overall better than sequential CPU code
-* profiling commands in "nvprof.bash"
+### Vector addition on CUDA
+
+```VectorAdd.cu``` creates random vectors of size arg[1] and adds them based on blockSize arg[2]. CPU vs GPU execution is profiled. Profiling with nvprof further elucidates GPU execution patterns. 
+
+```
+Usage 
+
+# compile
+nvcc -arch=sm_35 -O3 VectorAdd.cu -o vAdd
+
+#run
+./vAdd numElements blockSize
+Example
+./vAdd 10000000 2048
+
+#using slurm
+sbatch slurm_run.sbatch
+
+#cuda memcheck
+sbatch memcheck.bash
+
+#profiling
+source nvprof.bash
+```
+
+#### Pass correct blockSize
+* Since kepler has max block 1024, passing anything bigger will give wrong answer
+    * Use "cudaChecks/wrapper_gpu_error". Will catch error early
+    * Alternate way-> cuda-memcheck ./vAdd 1000000 2048
+
+#### Result
+```
+exec.9929074.out
+```
+
+#### Profiling Result
+
+```
+Example case
+nvprof ./vAdd 100000000 512
+```
+* Majority time spent in CUDA memcpy DtoH and HtoD.
+* This is small kernel and the kernel time is way less than data transfer time. Still overall better than sequential CPU code
 * ![](images/1.png)
 * ![](images/2.png)

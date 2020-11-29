@@ -1,0 +1,26 @@
+/var/spool/slurm/d/job10272682/slurm_script: line 12: cd: /scratch/arora.roh/GPUClassS19/HOL3/: No such file or directory
++ nvidia-smi
+Sun Mar 29 18:51:02 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 410.48                 Driver Version: 410.48                    |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla K20m          On   | 00000000:04:00.0 Off |                    0 |
+| N/A   37C    P8    25W / 225W |      0MiB /  4743MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
++ ./vadd_coalesced 100000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 202.03 ms
+Running parallel job.
+	Parallel Job Time: 16.08 ms
+Correct result. No errors were found.

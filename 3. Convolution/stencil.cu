@@ -3,7 +3,7 @@
 
 #define RADIUS 8
 #define BLOCK_SIZE 512
-
+//conv filter used here is identity
 __global__ void stencil(double *in, double *out, int vector_size) {
     int gindex = threadIdx.x + blockIdx.x * blockDim.x; //global index
 	if (gindex < vector_size){

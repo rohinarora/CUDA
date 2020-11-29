@@ -1,5 +1,4 @@
 ### Convolution Speed Up via Shared Memory
-* conv filter used here is identity
 * ```stencil.cu```. Standard CUDA conv
 * ```stencil_shared.cu```. CUDA conv with shared memory
 	* Each thread reads the vector elements from global memory. Same elements are read multiple times by thread. Overlapping operations. Load into pre-shared memory

@@ -3,9 +3,9 @@
 ### Source files
 
 * ```convBaseline.cu```. Naive conv of 1D vector with identity conv kernel. 
-	* Mutiple threads read same elements from global memory. Reuse operations.
+	* Mutiple threads read same elements from global memory/Repeated fetch from global memory of same elements.
 * ```convBaselineShared.cu```. Conv with shared memory
-	* Load into shared memory, aka programmable cache. Corner cases arising due to shared memory
+	* Use shared memory, aka programmable cache
 
 ### Usage
 
@@ -18,15 +18,15 @@ nvcc -O3 -arch=sm_35 -lineinfo convShared.cu -o convShared
 Run
 ```
 ./<executable_name> <vector_size>
-cuda-memcheck ./convShared 100000000 #sanity check
 ./convBaseline 100000000
+cuda-memcheck ./convShared 100000000 #sanity check
 nvprof ./convBaseline 100000000 #profiling
 ```
 
 ### Results
 
 ```Hardware - Tesla K20m, CUDA Version: 11.0```
-* 1D conv of vector size 100M elements with 1x5 kernel
+* 1D conv of vector size 100M elements with 1x17 kernel. Below GPU time is kernel time. There is addtional DtoH and HtoD movement overhead reported in profiling below. 
 * Baseline conv 30x faster on GPU compared to CPU
 ```
 ./convBaseline 100000000 
@@ -49,8 +49,22 @@ Running parallel job.
 Correct result. No errors were found.
 ```
 
-* Further optimization possible
+* Both implementations are I/O bound. >90% time is spent in data movement. Breaking the input into CUDA streams is a first possible optimization. 
+* The time spent in CUDA kernel call increases as conv kernel size increases (param radius in table below). The advantage of use of shared memory is more evidient in such case
+* Using shared memory, less registers per CUDA thread are used (16) than in naive implementation (30)
+* Varying the kernel size (kernel is 2*Radius+1). Vector size and Block Size fixed at 100M and 512 resp. Table below
 
+| Radius Size | CPU (ms)    | Naïve GPU (ms) | Optimised GPU (ms)
+| ----------- | ----------- |----------- | -----------
+| 0      | 200.47       | 11.17 |   11.27
+| 1   |     606.68    |  14.23  | 11.81
+| 2   |     822.28    |  16.26  | 12.25
+| 4   |     1272.61    |  27.28  | 12.60
+| 8   |     2155.35    |  51.21  | 14.81
+| 16   |     4467.58    |  99.08  | 21.29
+| 32   |     8949.27    |  195.68  | 32.92
+
+* As the compute load increases (conv kernel radius), shared memory implementation scales much better than naive version 
 
 ### Profiling
 
@@ -165,3 +179,9 @@ DSMem: Dynamic shared memory allocated per CUDA block.
 SrcMemType: The type of source memory accessed by memory operation/copy
 DstMemType: The type of destination memory accessed by memory operation/copy
 ```
+
+* Both implmentations have almost same CUDA memcpy DtoH and CUDA memcpy HtoD (as expected)
+
+#### Ref
+
+ * Idiom :  Aggregate all constants – values, constant pointers, etc. – into a single constant structure and pass that constant “environment” down through the kernel’s device functions as needed (while being careful to maintain its const’ness). The compiler does a great job recognizing that these values and pointers reside in the constant memory space. Works well for sm_20+. https://forums.developer.nvidia.com/t/defining-global-variables-on-the-host-and-device-at-once/31409/2?u=rohinarora07

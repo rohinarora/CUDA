@@ -4,7 +4,8 @@
 #define RADIUS 8
 #define BLOCK_SIZE 512
 //conv filter used here is identity
-__global__ void stencil(double *in, double *out, int vector_size) {
+__global__ void convBaseline(double *in, double *out, int vector_size) {
+	// each thread computes result for 1 element of output conv
     int gindex = threadIdx.x + blockIdx.x * blockDim.x; //global index
 	if (gindex < vector_size){
 		double result = 0.0;
@@ -66,7 +67,7 @@ int main( int argc, char* argv[] ) {
 
 	cudaEventRecord(start,0);
 
-	stencil<<<grid_size, BLOCK_SIZE>>>(in_gpu, out_gpu, vector_size);
+	convBaseline<<<grid_size, BLOCK_SIZE>>>(in_gpu, out_gpu, vector_size);
 
 	cudaEventRecord(stop,0);
 	cudaEventSynchronize(stop);

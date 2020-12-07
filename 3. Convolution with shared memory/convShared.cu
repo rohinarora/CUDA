@@ -4,27 +4,27 @@
 #define RADIUS 8
 #define BLOCK_SIZE 512
 
-__global__ void stencil_shared(double *in, double *out, int vector_size) {
-    __shared__ double temp[BLOCK_SIZE + 2 * RADIUS]; //copy all the data the block would need into shared memory first
+__global__ void convShared(double *in, double *out, int vector_size) {
+    __shared__ double temp[BLOCK_SIZE + 2 * RADIUS]; //copy all the data the block would need into shared memory first. img2.png
     int gindex = threadIdx.x + blockIdx.x * blockDim.x; //global index
     int lindex = threadIdx.x + RADIUS; //local index
 	if (gindex < vector_size){
 		temp[lindex] = in[gindex]; //load in shared memory
-		if (threadIdx.x < RADIUS) { //load the 2 radius segments of shared memory (aka halo part)
+		if (threadIdx.x < RADIUS) { //load the 2 radius segments of shared memory (aka halo part). left end and right end
 		   temp[lindex - RADIUS] = (gindex - RADIUS >= 0) ? in[gindex - RADIUS]: 0.0;
 		   temp[lindex + BLOCK_SIZE] = (gindex + BLOCK_SIZE < vector_size) ? in[gindex + BLOCK_SIZE]: 0.0;
 		}
 	
 	} else {
-		temp[lindex] = 0.0;
+		temp[lindex] = 0.0; //for case when vector_size % block_size !=0. the halo part of shared memory in last block. for this case, the halos at end start early. hence this like. ref img1.png. 
 	}
 	__syncthreads(); //let all threads complete their data load
 	
 	if (gindex < vector_size){
 		double result = 0.0;
 		for (int offset = -RADIUS ; offset <= RADIUS ; ++offset)
-		   result += temp[lindex + offset];
-		out[gindex] = result;  // Store the result
+		   result += temp[lindex + offset]; //all boundary condition checks were done when loading shared memory *temp. no need to do them here. unlike convBaseline kernel
+		out[gindex] = result;  // Store the result in global memory
 	}
 }	
 
@@ -44,8 +44,7 @@ int main( int argc, char* argv[] ) {
 	cudaEventCreate (&start);
 	cudaEventCreate (&stop);
 
-	// NEW
-	cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
+	cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte); //to check 8 vs 4 bytes effect. compare with default
 	
 	double *in_cpu         = new double [vector_size]; // CPU Struct
 	double *out_cpu        = new double [vector_size];
@@ -79,7 +78,7 @@ int main( int argc, char* argv[] ) {
 	printf("\tSequential Job Time: %.2f ms\n", time);
 	printf("Running parallel job.\n");
 	cudaEventRecord(start,0);
-	stencil_shared<<<grid_size, BLOCK_SIZE>>>(in_gpu, out_gpu, vector_size); // call the kernel
+	convShared<<<grid_size, BLOCK_SIZE>>>(in_gpu, out_gpu, vector_size); // call the kernel
 	cudaEventRecord(stop,0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);

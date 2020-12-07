@@ -66,6 +66,21 @@ Correct result. No errors were found.
 
 * As the compute load increases (conv kernel radius), shared memory implementation scales much better than naive version 
 
+**Float vs Double**
+
+| Data Type | CPU (ms)    | Naïve GPU (ms) | Optimised GPU (ms)
+| ----------- | ----------- |----------- | -----------
+| Double      | 1565.88      | 51.12|   15.06
+| Float      | 4202.25       | 28.78 |   13.16
+
+* It seems float is faster on GPU and slower on CPU, compared to double 
+* As a general case - 
+   * If the hardware implements double (like the x86 does), then float is emulated by extending it there, and the conversion will cost time. In this case, double will be faster.
+   * If the hardware implements float only, then emulating double with it will cost even more time. In this case, float will be faster.
+   * And if the hardware implements neither, and both have to be implemented in software. In this case, both will be slow, but double will be slightly slower.
+* Since x86 implements double, seeing faster double than float on CPU makes sense. 
+* Float is faster than double on GPU. 
+
 ### Profiling
 
 **Profiling naive conv**
@@ -184,4 +199,6 @@ DstMemType: The type of destination memory accessed by memory operation/copy
 
 #### Ref
 
- * Idiom :  Aggregate all constants – values, constant pointers, etc. – into a single constant structure and pass that constant “environment” down through the kernel’s device functions as needed (while being careful to maintain its const’ness). The compiler does a great job recognizing that these values and pointers reside in the constant memory space. Works well for sm_20+. https://forums.developer.nvidia.com/t/defining-global-variables-on-the-host-and-device-at-once/31409/2?u=rohinarora07
+* Idiom :  Aggregate all constants – values, constant pointers, etc. – into a single constant structure and pass that constant “environment” down through the kernel’s device functions as needed (while being careful to maintain its const’ness). The compiler does a great job recognizing that these values and pointers reside in the constant memory space. Works well for sm_20+. https://forums.developer.nvidia.com/t/defining-global-variables-on-the-host-and-device-at-once/31409/2?u=rohinarora07
+
+* https://stackoverflow.com/questions/4584637/double-or-float-which-is-faster

@@ -51,15 +51,71 @@ Correct result. No errors were found.
 
 * Further optimization possible
 
-investigate which metrics improved compared to the naïve implementation using nvprof
-
-
-
 
 ### Profiling
 
-Profiling conv with shared memory
+**Profiling naive conv**
+
 ```
+nvprof  ./convBaseline 100000000
+==16678== NVPROF is profiling process 16678, command: ./convBaseline 100000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 1615.57 ms
+Running parallel job.
+	Parallel Job Time: 51.17 ms
+Correct result. No errors were found.
+==16678== Profiling application: ./convBaseline 100000000
+==16678== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   45.27%  240.78ms         1  240.78ms  240.78ms  240.78ms  [CUDA memcpy DtoH]
+                   45.20%  240.40ms         1  240.40ms  240.40ms  240.40ms  [CUDA memcpy HtoD]
+                    9.52%  50.643ms         1  50.643ms  50.643ms  50.643ms  convBaseline(double*, double*, int)
+      API calls:   61.44%  482.10ms         2  241.05ms  240.81ms  241.29ms  cudaMemcpy
+                   20.95%  164.36ms         2  82.179ms  1.3350us  164.36ms  cudaEventCreate
+                   10.58%  82.981ms         2  41.491ms  1.3815ms  81.600ms  cudaFree
+                    6.51%  51.073ms         2  25.536ms  27.093us  51.046ms  cudaEventSynchronize
+                    0.44%  3.4532ms         2  1.7266ms  1.5486ms  1.9047ms  cudaMalloc
+                    0.03%  258.63us         1  258.63us  258.63us  258.63us  cuDeviceTotalMem
+                    0.02%  186.79us       101  1.8490us     227ns  74.530us  cuDeviceGetAttribute
+                    0.01%  117.02us         1  117.02us  117.02us  117.02us  cudaLaunchKernel
+                    0.01%  75.071us         4  18.767us  7.0160us  31.734us  cudaEventRecord
+                    0.00%  27.009us         1  27.009us  27.009us  27.009us  cuDeviceGetName
+                    0.00%  12.595us         1  12.595us  12.595us  12.595us  cudaSetDevice
+                    0.00%  11.183us         1  11.183us  11.183us  11.183us  cuDeviceGetPCIBusId
+                    0.00%  10.159us         2  5.0790us  2.8850us  7.2740us  cudaEventElapsedTime
+                    0.00%  2.3440us         3     781ns     313ns  1.2830us  cuDeviceGetCount
+                    0.00%  1.2570us         2     628ns     315ns     942ns  cuDeviceGet
+                    0.00%     570ns         1     570ns     570ns     570ns  cuDeviceGetUuid
+```
+
+Using trace
+```
+nvprof --print-gpu-trace ./convBaseline 100000000
+==16587== NVPROF is profiling process 16587, command: ./convBaseline 100000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 1615.28 ms
+Running parallel job.
+	Parallel Job Time: 51.14 ms
+Correct result. No errors were found.
+==16587== Profiling application: ./convBaseline 100000000
+==16587== Profiling result:
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*      Size  Throughput  SrcMemType  DstMemType           Device   Context    Stream  Name
+6.78879s  239.76ms                    -               -         -         -         -  762.94MB  3.1075GB/s    Pageable      Device   Tesla K20m (0)         1         7  [CUDA memcpy HtoD]
+8.64493s  50.645ms         (195313 1 1)       (512 1 1)        30        0B        0B         -           -           -           -   Tesla K20m (0)         1         7  convBaseline(double*, double*, int) [122]
+8.69575s  241.54ms                    -               -         -         -         -  762.94MB  3.0847GB/s      Device    Pageable   Tesla K20m (0)         1         7  [CUDA memcpy DtoH]
+
+Regs: Number of registers used per CUDA thread. This number includes registers used internally by the CUDA driver and/or tools and can be more than what the compiler shows.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
+SrcMemType: The type of source memory accessed by memory operation/copy
+DstMemType: The type of destination memory accessed by memory operation/copy
+```
+
+**Profiling conv with shared memory**
+```
+nvprof ./convShared 100000000
 ==15132== Profiling application: ./convShared 100000000
 ==15132== Profiling result:
             Type  Time(%)      Time     Calls       Avg       Min       Max  Name
@@ -83,4 +139,29 @@ Profiling conv with shared memory
                     0.00%  2.0460us         3     682ns     309ns  1.0900us  cuDeviceGetCount
                     0.00%  1.0690us         2     534ns     280ns     789ns  cuDeviceGet
                     0.00%     406ns         1     406ns     406ns     406ns  cuDeviceGetUuid
+```
+
+Using trace
+```
+nvprof --print-gpu-trace ./convShared 100000000
+==15687== NVPROF is profiling process 15687, command: ./convShared 100000000
+Initializing input arrays.
+Running sequential job.
+	Sequential Job Time: 1568.64 ms
+Running parallel job.
+==15687== Warning: Profiling results might be incorrect with current version of nvcc compiler used to compile cuda app. Compile with nvcc compiler 9.0 or later version to get correct profiling results. Ignore this warning if code is already compiled with the recommended nvcc version 
+	Parallel Job Time: 15.26 ms
+Correct result. No errors were found.
+==15687== Profiling application: ./convShared 100000000
+==15687== Profiling result:
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*      Size  Throughput  SrcMemType  DstMemType           Device   Context    Stream  Name
+6.90051s  239.26ms                    -               -         -         -         -  762.94MB  3.1140GB/s    Pageable      Device   Tesla K20m (0)         1         7  [CUDA memcpy HtoD]
+8.70987s  14.325ms         (195313 1 1)       (512 1 1)        16  4.1250KB        0B         -           -           -           -   Tesla K20m (0)         1         7  convShared(double*, double*, int) [123]
+8.72436s  240.97ms                    -               -         -         -         -  762.94MB  3.0919GB/s      Device    Pageable   Tesla K20m (0)         1         7  [CUDA memcpy DtoH]
+
+Regs: Number of registers used per CUDA thread. This number includes registers used internally by the CUDA driver and/or tools and can be more than what the compiler shows.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
+SrcMemType: The type of source memory accessed by memory operation/copy
+DstMemType: The type of destination memory accessed by memory operation/copy
 ```
